@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { dataAirports } from "./airports";
 import { dataRoutes } from "./routes";
+import { NetworkDiagram } from './vizcomponents/NetworkDiagram';
 
-const MAX_AIRPORTS = 500; // <-- filtre temporaire, à supprimer plus tard
+const MAX_AIRPORTS = 10; // <-- filtre temporaire, à supprimer plus tard
 
 const MARGIN = { top: 0, right: 0, bottom: 0, left: 0 };
 
@@ -47,7 +48,7 @@ function App() {
       )
       .sort((a, b) => routeCount[b.IATA] - routeCount[a.IATA])
       .slice(0, MAX_AIRPORTS);
-    const selectedAirportIds = new Set( 
+    const selectedAirportIds = new Set(
       selectedAirports.map((airport) => airport.IATA)
     );
 
@@ -56,6 +57,8 @@ function App() {
       id: airport.IATA,
       name: airport.name,
       country: airport.country,
+      latitude: airport.latitude,
+      longitude: airport.longitude,
       nRoutes: routeCount[airport.IATA],
     }));
 
@@ -72,14 +75,13 @@ function App() {
       links: filteredLinks,
     });
   }, []);
-  
-  if (!data) return <div style={{ marginLeft: 50 }}> Loading... </div>;
-  console.log(data);  
 
+  if (!data) return <div style={{ marginLeft: 50 }}> Loading... </div>;
+  //console.log(data);
+  //console.log(data.nodes);
 
   return (
     <div className="main-container">
-
       <div style={{ marginTop: -10, marginBottom: 20 }}>
         <p style={{ fontWeight: "bolder", fontStyle: "italic", fontSize: 32 }}>
           Flight routes
@@ -88,8 +90,9 @@ function App() {
 
       <div className="line" />
 
+      <NetworkDiagram width={400} height={400} data={data} />
     </div>
-  )
+  );
 }
 
 export default App
