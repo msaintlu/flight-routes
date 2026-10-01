@@ -28,6 +28,6 @@ export function drawNetwork(ctx, width, height, nodes, links, sizeScale) {
     ctx.fill();
 
     ctx.strokeStyle = "#1D3354";
-    ctx.stroke();
+    //ctx.stroke();
   });
 }
