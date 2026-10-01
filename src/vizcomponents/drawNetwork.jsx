@@ -1,26 +1,33 @@
-export const RADIUS = 10;
+export function drawNetwork(ctx, width, height, nodes, links, sizeScale) {
 
-export const drawNetwork = ({ctx, width, height, nodes, links}) => {
   ctx.clearRect(0, 0, width, height);
 
   // Draw the links first
+  ctx.globalAlpha = 0.1;
+
   links.forEach((link) => {
     ctx.beginPath();
     ctx.moveTo(link.source.x, link.source.y);
     ctx.lineTo(link.target.x, link.target.y);
+    ctx.strokeStyle = "#D2D6EF";
     ctx.stroke();
   });
 
   // Draw the nodes
+  ctx.globalAlpha = 1;
+
   nodes.forEach((node) => {
     if (!node.x || !node.y) {
       return;
     }
 
     ctx.beginPath();
-    ctx.moveTo(node.x + RADIUS, node.y);
-    ctx.arc(node.x, node.y, RADIUS, 0, 2 * Math.PI);
-    ctx.fillStyle = '#cb1dd1';
+    ctx.arc(node.x, node.y, sizeScale(node.nRoutes), 0, 2 * Math.PI);
+
+    ctx.fillStyle = "#467599";
     ctx.fill();
+
+    ctx.strokeStyle = "#1D3354";
+    ctx.stroke();
   });
-};
+}

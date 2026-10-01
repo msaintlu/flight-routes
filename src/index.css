@@ -11,6 +11,7 @@
 
 /* main container centered on the screen */
 .main-container {
+  /*background-color: lightBlue;*/
   margin-right: auto;
   margin-left: auto;
 }

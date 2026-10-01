@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import { useEffect, useRef, useMemo } from 'react';
+import { drawNetwork } from "./drawNetwork";
 
 export const RADIUS = 2;
 const BUBBLE_MIN_SIZE = 1;
@@ -42,42 +43,10 @@ export const NetworkDiagram = ({width, height, data}) => {
       .force("charge", d3.forceManyBody().strength(-4)) // Force #3: attraction or repulsion between nodes
       .force("center", d3.forceCenter(width / 2, height / 2)) // Force #4: nodes are attracted by the center of the chart area
       // at each iteration of the simulation, draw the network diagram with the new node positions
-      .force("x", d3.forceX(width / 2).strength(0.02))
+      .force("x", d3.forceX(width / 2).strength(0.03))
       .force("y", d3.forceY(height / 2).strength(0.06))
       .on("tick", () => {
-        //  drawNetwork(ctx, width, height, nodes, links);
-        //});
-        ctx.clearRect(0, 0, width, height);
-
-        // Draw the links first
-        ctx.globalAlpha = 0.1;
-        links.forEach((link) => {
-          ctx.beginPath();
-          ctx.moveTo(link.source.x, link.source.y);
-          ctx.lineTo(link.target.x, link.target.y);
-          ctx.strokeStyle = "grey";
-          ctx.stroke();
-        });
-
-        // Draw the nodes
-        ctx.globalAlpha = 1;
-        nodes.forEach((node) => {
-          if (!node.x || !node.y) {
-            return;
-          }
-
-          ctx.beginPath();
-          ctx.moveTo(
-            node.x + sizeScale(node.nRoutes),
-            node.y + sizeScale(node.nRoutes)
-          );
-          ctx.arc(node.x, node.y, sizeScale(node.nRoutes), 0, 2 * Math.PI);
-          ctx.fillStyle = "orchid";
-          ctx.fill();
-          ctx.strokeStyle = "#cb1dd1";
-          ctx.stroke();
-
-        });
+        drawNetwork(ctx, width, height, nodes, links, sizeScale);
       });
 
   }, [width, height, data]);
@@ -86,7 +55,7 @@ export const NetworkDiagram = ({width, height, data}) => {
 
 
   return (
-    <div>
+    <div style={{ display: "flex", justifyContent: "center" }}>
       <canvas ref={canvasRef} width={width} height={height} />
     </div>
   );
