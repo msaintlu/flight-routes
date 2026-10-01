@@ -3,7 +3,7 @@ import { dataAirports } from "./airports";
 import { dataRoutes } from "./routes";
 import { NetworkDiagram } from './vizcomponents/NetworkDiagram';
 
-const MAX_AIRPORTS = 1000; // <-- filtre temporaire, à supprimer plus tard
+const MAX_AIRPORTS = 2500; // <-- filtre temporaire, à supprimer plus tard
 
 const MARGIN = { top: 0, right: 0, bottom: 0, left: 0 };
 
@@ -82,7 +82,7 @@ function App() {
 
   return (
     <div className="main-container">
-      <div style={{ marginTop: -10, marginBottom: 20 }}>
+      <div style={{ marginTop: -10, marginBottom: 0 }}>
         <p style={{ fontWeight: "bolder", fontStyle: "italic", fontSize: 32 }}>
           Flight routes
         </p>
@@ -90,7 +90,7 @@ function App() {
 
       <div className="line" />
 
-      <NetworkDiagram width={1000} height={500} data={data} />
+      <NetworkDiagram width={1300} height={700} data={data} />
     </div>
   );
 }

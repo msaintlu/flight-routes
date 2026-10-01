@@ -24,14 +24,15 @@ export const NetworkDiagram = ({width, height, data}) => {
         "link",
         d3.forceLink(links).id((d) => d.id)
       ) // Force #1: links between nodes
-      .force("collide", d3.forceCollide().radius(RADIUS)) // Force #2: avoid node overlaps
-      .force("charge", d3.forceManyBody().strength(-1)) // Force #3: attraction or repulsion between nodes
+      .force("collide", d3.forceCollide().radius(RADIUS).strength(0)) // Force #2: avoid node overlaps
+      .force("charge", d3.forceManyBody().strength(-4)) // Force #3: attraction or repulsion between nodes
       .force("center", d3.forceCenter(width / 2, height / 2)) // Force #4: nodes are attracted by the center of the chart area
-
       // at each iteration of the simulation, draw the network diagram with the new node positions
-      .on('tick', () => {
-      //  drawNetwork(ctx, width, height, nodes, links);
-      //});
+      .force("x", d3.forceX(width / 2).strength(0.03))
+      .force("y", d3.forceY(height / 2).strength(0.05))
+      .on("tick", () => {
+        //  drawNetwork(ctx, width, height, nodes, links);
+        //});
         ctx.clearRect(0, 0, width, height);
 
         ctx.globalAlpha = 0.1;
