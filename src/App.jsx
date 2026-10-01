@@ -90,7 +90,7 @@ function App() {
 
       <div className="line" />
 
-      <NetworkDiagram width={1300} height={700} data={data} />
+      <NetworkDiagram width={1400} height={700} data={data} />
     </div>
   );
 }
