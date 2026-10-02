@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { dataAirports } from "./airports";
 import { dataRoutes } from "./routes";
 import { NetworkDiagram } from './vizcomponents/NetworkDiagram';
+import { FaPlane } from "react-icons/fa";
 
 const MAX_AIRPORTS = 100; // <-- filtre temporaire, à supprimer plus tard // 2500
 
@@ -82,13 +83,12 @@ function App() {
 
   return (
     <>
-      <div style={{ marginTop: -10, marginBottom: 0 }}>
-        <p style={{ fontWeight: "bolder", fontStyle: "italic", fontSize: 32 }}>
-          Flight routes
-        </p>
+      <div className="title-container">
+        <p className="title"> Flight routes </p>
+        <div className="line" />
+        <FaPlane size={32}/>
       </div>
 
-      <div className="line" />
       <div>
         <NetworkDiagram width={1400} height={700} data={data} />
       </div>

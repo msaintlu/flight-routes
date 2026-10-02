@@ -19,14 +19,9 @@ export const Tooltip = ({interactionData, width}) => {
         textAlign: placement === "left" ? "end" : "start",
       }}
     >
-      <div className="tooltip-title">
-        <b>{interactionData.name}</b>
-      </div>
-
-      <p>
-        <b> {interactionData.country} </b>
-      </p>
-      <p className="tooltip-row"> {interactionData.nRoutes + " routes"} </p>
+      <h3 className="tooltip-title">{interactionData.name}</h3>
+      <h4> {interactionData.country} </h4>
+      <p> {interactionData.nRoutes + " routes"} </p>
     </div>
   );
 };

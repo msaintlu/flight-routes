@@ -10,17 +10,27 @@
 }
 
 /* main container centered on the screen */
-.main-container {
+.title-container {
   /*background-color: lightBlue;*/
-  margin-right: auto;
-  margin-left: auto;
+  margin-right: 10px;
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.title{
+  font-weight: bolder;
+  font-style: italic;
+  font-size: 32px;
+  margin: 0;
+  white-space: nowrap;
 }
 
 .line {
   height: 1px;
   background-color: #000000;
-  margin-bottom: 0px;
-  margin-top: -20px;
+  flex: 1; /* The line takes all the remaining space */
 }
 
 .tooltip {
@@ -30,7 +40,7 @@
     border-radius: 5px;
     /*box-shadow: 3px 3px 3px rgb(0 0 0 / 10%);*/
     font-size: 16px;
-    /*max-width: 200px;*/
+    max-width: 500px;
     min-width: 110px;
     padding: 8px 12px;
     position: absolute; /* PUT THIS INLINE */
@@ -40,13 +50,8 @@
 }
 
 .tooltip-title {
-  font-size: 18px;
-  margin-bottom: 8px;
+  line-height: 20px;
+  overflow-wrap: break-word;
 }
 
-.tooltip-row {
-    line-height: 16px;
-    font-size: 16px;
-    margin: 2px 0;
-}
 
