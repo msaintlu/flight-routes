@@ -134,8 +134,9 @@ export const NetworkDiagram = ({width, height, data}) => {
     <div
       style={{
         position: "relative",
-        display: "flex",
-        justifyContent: "center",
+        width: width,
+        height: height,
+        margin: "0 auto",
       }}
     >
       <canvas
@@ -163,8 +164,8 @@ export const NetworkDiagram = ({width, height, data}) => {
       <div
         style={{
           position: "absolute",
-          left:0,
-          top:0,
+          left: 0,
+          top: 0,
           width: width,
           height: height,
           pointerEvents: "none",
