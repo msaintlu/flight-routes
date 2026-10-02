@@ -25,11 +25,12 @@
   font-size: 32px;
   margin: 0;
   white-space: nowrap;
+  color: #467599
 }
 
 .line {
   height: 1px;
-  background-color: #000000;
+  background-color: #BBD5ED;
   flex: 1; /* The line takes all the remaining space */
 }
 

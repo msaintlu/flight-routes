@@ -86,7 +86,7 @@ function App() {
       <div className="title-container">
         <p className="title"> Flight routes </p>
         <div className="line" />
-        <FaPlane size={32}/>
+        <FaPlane size={32} color="#467599"/>
       </div>
 
       <div>
