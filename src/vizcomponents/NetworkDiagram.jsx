@@ -1,29 +1,24 @@
 import * as d3 from "d3";
+import { quadtree } from "d3";
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { drawNetwork } from "./drawNetwork";
 
-const RADIUS = 2;
+//const RADIUS = 2;
 const BUBBLE_MIN_SIZE = 1;
 const BUBBLE_MAX_SIZE = 10;
 const COLOR_NODE = "#467599";
+const COLOR_LINK = "#BBD5ED";//"#D2D6EF";//
 
 export const NetworkDiagram = ({width, height, data}) => {
   const canvasRef = useRef(null);
   const overlayRef = useRef(null);
   const [interactionData, setInteractionData] = useState(null);
-
-  const drawNode = (ctx, node, sizeScale, COLOR_NODE) => {
-    ctx.fillStyle = COLOR_NODE;
-    ctx.beginPath();
-    ctx.arc(node.x, node.y, sizeScale(node.nRoutes), 0, 2 * Math.PI);
-    ctx.fill();
-  };
+  const quadtreeRef = useRef(null); // don't want to trigger a re render when quadtree is updated
 
   // The force simulation mutates links and nodes, so create a copy first
   // Node positions are initialized by d3
-  const links = useMemo(() => data.links.map((d) => ({ ...d })), [data.links]);
+  const links = useMemo(() => data.links.map((d) => ({ ...d })), [data.links]); // useMemo important because of the hovering. React reredenders on every hover, so without useMemo it recomputes nodes and links so they won't have .x and .y anymore
   const nodes = useMemo(() => data.nodes.map((d) => ({ ...d })), [data.nodes]);
-
 
   const sizeScale = useMemo(() => {
     const [min, max] = d3.extent(nodes, (node) => node.nRoutes);
@@ -33,6 +28,37 @@ export const NetworkDiagram = ({width, height, data}) => {
       .domain([min, max])
       .range([BUBBLE_MIN_SIZE, BUBBLE_MAX_SIZE]);
   }, [nodes]);
+
+  // Draw hovered node
+  const drawNode = (ctx, hoveredNode) => {
+    // Get routes departing from hovered node
+    const hoveredLinks = links.filter(
+      (link) => link.source.id === hoveredNode.id
+    );
+
+    // draw hovered links
+    ctx.globalAlpha = 0.5;
+    ctx.strokeStyle = COLOR_NODE;
+    hoveredLinks.forEach((link) => {
+      ctx.beginPath();
+      ctx.moveTo(link.source.x, link.source.y);
+      ctx.lineTo(link.target.x, link.target.y);
+      ctx.stroke();
+    });
+    
+    // draw hovered nodes
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = COLOR_NODE;
+    ctx.beginPath();
+    ctx.arc(
+      hoveredNode.x,
+      hoveredNode.y,
+      sizeScale(hoveredNode.nRoutes),
+      0,
+      2 * Math.PI
+    );
+    ctx.fill();
+  };
 
   // Layer 1: simulation and network drawing, run once
   useEffect(() => {
@@ -63,13 +89,26 @@ export const NetworkDiagram = ({width, height, data}) => {
     };
   }, [width, height, data]);
 
-  // Layer 2: only the hovered row + column, redrawn on hover.
+  // Build the quadtree (to detect closest hovered point) every 50 ms
+  useEffect(() => {
+    const interval = setInterval(() => {
+      quadtreeRef.current = d3.quadtree(
+        nodes,
+        (d) => d.x,
+        (d) => d.y
+      );
+    }, 50);
+
+    return () => clearInterval(interval);
+  }, [nodes]);
+
+  // Layer 2: only the hovered node and links sourcing from the hovered node.
   useEffect(() => {
     const ctx = overlayRef.current.getContext("2d");
     ctx.clearRect(0, 0, width, height);
     if (!interactionData) return;
 
-    drawNode(ctx, interactionData, sizeScale, COLOR_NODE);
+    drawNode(ctx, interactionData);
   }, [data, interactionData, width, height, sizeScale, COLOR_NODE]);
 
   // One listener on the canvas, then we find the circle ourselves.
@@ -78,9 +117,7 @@ export const NetworkDiagram = ({width, height, data}) => {
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
-    const found = nodes.find(
-      (node) => Math.hypot(node.x - mx, node.y - my) <= sizeScale(node.nRoutes)
-    );
+    const found = quadtreeRef.current?.find(mx, my, 30);
     setInteractionData(found ?? null);
   };
 

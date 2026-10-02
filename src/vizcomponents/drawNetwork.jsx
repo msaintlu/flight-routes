@@ -9,7 +9,7 @@ export function drawNetwork(ctx, width, height, nodes, links, sizeScale) {
     ctx.beginPath();
     ctx.moveTo(link.source.x, link.source.y);
     ctx.lineTo(link.target.x, link.target.y);
-    ctx.strokeStyle = "#D2D6EF";
+    ctx.strokeStyle = "#BBD5ED";
     ctx.stroke();
   });
 
