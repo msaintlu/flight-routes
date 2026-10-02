@@ -2,12 +2,25 @@ import * as d3 from "d3";
 import { quadtree } from "d3";
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { drawNetwork } from "./drawNetwork";
+import { drawHoveredNode } from "./drawHoveredNode";
 
 //const RADIUS = 2;
 const BUBBLE_MIN_SIZE = 1;
 const BUBBLE_MAX_SIZE = 10;
 const COLOR_NODE = "#467599";
 const COLOR_LINK = "#BBD5ED";//"#D2D6EF";//
+
+// Throttling function; Run fn at most once every 'wait' ms.
+function throttle(fn, wait) {
+  let last = 0;
+  return (...args) => {
+    const now = Date.now();
+    if (now - last >= wait) {
+      last = now;
+      fn(...args);
+    }
+  };
+}
 
 export const NetworkDiagram = ({width, height, data}) => {
   const canvasRef = useRef(null);
@@ -29,37 +42,6 @@ export const NetworkDiagram = ({width, height, data}) => {
       .range([BUBBLE_MIN_SIZE, BUBBLE_MAX_SIZE]);
   }, [nodes]);
 
-  // Draw hovered node
-  const drawNode = (ctx, hoveredNode) => {
-    // Get routes departing from hovered node
-    const hoveredLinks = links.filter(
-      (link) => link.source.id === hoveredNode.id
-    );
-
-    // draw hovered links
-    ctx.globalAlpha = 0.5;
-    ctx.strokeStyle = COLOR_NODE;
-    hoveredLinks.forEach((link) => {
-      ctx.beginPath();
-      ctx.moveTo(link.source.x, link.source.y);
-      ctx.lineTo(link.target.x, link.target.y);
-      ctx.stroke();
-    });
-    
-    // draw hovered nodes
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = COLOR_NODE;
-    ctx.beginPath();
-    ctx.arc(
-      hoveredNode.x,
-      hoveredNode.y,
-      sizeScale(hoveredNode.nRoutes),
-      0,
-      2 * Math.PI
-    );
-    ctx.fill();
-  };
-
   // Layer 1: simulation and network drawing, run once
   useEffect(() => {
     const ctx = canvasRef.current.getContext("2d");
@@ -69,7 +51,8 @@ export const NetworkDiagram = ({width, height, data}) => {
     }
 
     // d3-force to find the position of nodes on the canvas
-    const simulation = d3.forceSimulation(nodes) // apply the simulation to our array of nodes
+    const simulation = d3
+      .forceSimulation(nodes) // apply the simulation to our array of nodes
       .force(
         "link",
         d3.forceLink(links).id((d) => d.id)
@@ -81,7 +64,7 @@ export const NetworkDiagram = ({width, height, data}) => {
       .force("x", d3.forceX(width / 2).strength(0.03))
       .force("y", d3.forceY(height / 2).strength(0.06))
       .on("tick", () => {
-        drawNetwork(ctx, width, height, nodes, links, sizeScale);
+        drawNetwork(ctx, width, height, nodes, links, sizeScale, {colorNode: COLOR_NODE, colorLink: COLOR_LINK});
       });
 
     return () => {
@@ -89,7 +72,9 @@ export const NetworkDiagram = ({width, height, data}) => {
     };
   }, [width, height, data]);
 
-  // Build the quadtree (to detect closest hovered point) every 50 ms
+  // Layer 2: only the hovered node and links sourcing from the hovered node.
+
+  // Build the quadtree (to detect closest hovered point) every 50 ms when the simulation is running
   useEffect(() => {
     const interval = setInterval(() => {
       quadtreeRef.current = d3.quadtree(
@@ -102,14 +87,16 @@ export const NetworkDiagram = ({width, height, data}) => {
     return () => clearInterval(interval);
   }, [nodes]);
 
-  // Layer 2: only the hovered node and links sourcing from the hovered node.
+  // layer 2
   useEffect(() => {
     const ctx = overlayRef.current.getContext("2d");
     ctx.clearRect(0, 0, width, height);
     if (!interactionData) return;
 
-    drawNode(ctx, interactionData);
+    drawHoveredNode(ctx, interactionData, links, sizeScale, { colorNode: COLOR_NODE });
   }, [data, interactionData, width, height, sizeScale, COLOR_NODE]);
+
+  // Mouse move handler
 
   // One listener on the canvas, then we find the circle ourselves.
   const handleMove = (e) => {
@@ -121,8 +108,19 @@ export const NetworkDiagram = ({width, height, data}) => {
     setInteractionData(found ?? null);
   };
 
+  // Build the throttled function
+  const throttledHandleMove = useMemo(() => throttle(handleMove, 100), [
+    quadtreeRef,
+  ]);
+
   return (
-    <div style={{ position: "relative", display: "flex", justifyContent: "center" }}>
+    <div
+      style={{
+        position: "relative",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
       <canvas
         ref={canvasRef}
         width={width}

@@ -1,4 +1,5 @@
-export function drawNetwork(ctx, width, height, nodes, links, sizeScale) {
+export function drawNetwork(ctx, width, height, nodes, links, sizeScale, options) {
+  const {colorNode, colorLink} = options;
 
   ctx.clearRect(0, 0, width, height);
 
@@ -24,10 +25,10 @@ export function drawNetwork(ctx, width, height, nodes, links, sizeScale) {
     ctx.beginPath();
     ctx.arc(node.x, node.y, sizeScale(node.nRoutes), 0, 2 * Math.PI);
 
-    ctx.fillStyle = "#467599";
+    ctx.fillStyle = colorNode;
     ctx.fill();
 
-    ctx.strokeStyle = "#1D3354";
+    ctx.strokeStyle = colorLink;
     //ctx.stroke();
   });
 }
