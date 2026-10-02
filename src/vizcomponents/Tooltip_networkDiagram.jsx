@@ -10,12 +10,15 @@ export const Tooltip = ({interactionData, width}) => {
       className="tooltip"
       style={{
         position: "absolute", // DO NOT PUT IN THE CSS. It is ignored there, for some reason
-        left: interactionData.x,
+        /*left: interactionData.x,*/
         top: interactionData.y,
-        transform: 
+        /*transform: 
           placement === "left" 
           ? "translate(calc(-100% - 200px),-50%)" 
-          : "translate(200px,-50%)",
+          : "translate(200px,-50%)",*/
+        left: placement === "left" ? "auto" : interactionData.x + 200,
+        right: placement === "left" ? width - interactionData.x + 200 : "auto",
+        transform: "translateY(-50%)",
         textAlign: placement === "left" ? "end" : "start",
       }}
     >
