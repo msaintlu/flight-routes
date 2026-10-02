@@ -31,6 +31,7 @@ export const NetworkDiagram = ({width, height, data}) => {
   const [interactionData, setInteractionData] = useState(null);
   const quadtreeRef = useRef(null); // don't want to trigger a re render when quadtree is updated
   const [simulationRunning, setSimulationRunning] = useState(true);
+  const zoomTransformRef = useRef(d3.zoomIdentity);
 
   // The force simulation mutates links and nodes, so create a copy first
   // Node positions are initialized by d3
@@ -80,6 +81,7 @@ export const NetworkDiagram = ({width, height, data}) => {
           drawNetwork(ctx, width, height, nodes, links, sizeScale, {
             colorNode: COLOR_NODE,
             colorLink: COLOR_LINK,
+            transform: zoomTransformRef.current,
           });
         });
       })
@@ -111,17 +113,26 @@ export const NetworkDiagram = ({width, height, data}) => {
     ctx.clearRect(0, 0, width, height);
     if (!interactionData) return;
 
-    drawHoveredNode(ctx, interactionData, links, sizeScale, { colorNode: COLOR_NODE });
-  }, [data, interactionData, width, height, sizeScale, COLOR_NODE]);
+    drawHoveredNode(ctx, interactionData, links, sizeScale, { 
+      colorNode: COLOR_NODE, 
+      transform: zoomTransformRef.current
+    });
+  }, [interactionData, width, height, sizeScale]);
 
 
   // One listener on the canvas, then we find the circle ourselves.
   const handleMove = (e) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const mx = e.clientX - rect.left;
-    const my = e.clientY - rect.top;
 
-    const found = quadtreeRef.current?.find(mx, my, 30);
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const transform = zoomTransformRef.current;
+
+    const [mx, my] = transform.invert([mouseX, mouseY]);
+
+    const found = quadtreeRef.current?.find(mx, my, 60 / transform.k);
+
     setInteractionData(found ?? null);
   };
 
@@ -129,6 +140,48 @@ export const NetworkDiagram = ({width, height, data}) => {
   const throttledHandleMove = useMemo(() => throttle(handleMove, HOVER_THROTTLE), [ // Works, but isn't there a 'pb' with the fact that quadtreeRef runs every 50 ms when the simulation is running ?
     quadtreeRef,
   ]);
+
+  // redraw on wheel zoom
+  useEffect(() => {
+    const canvas = overlayRef.current;
+
+    if (!canvas) return;
+
+    const zoomBehavior = d3
+      .zoom()
+      .scaleExtent([0.5, 5])
+      .on("zoom", (event) => {
+        const transform = event.transform;
+
+        zoomTransformRef.current = transform;
+
+        // Layer 1
+        const ctx = canvasRef.current.getContext("2d");
+
+        drawNetwork(ctx, width, height, nodes, links, sizeScale, {
+          colorNode: COLOR_NODE,
+          colorLink: COLOR_LINK,
+          transform: transform,
+        });
+
+        // Layer 2
+        const overlayCtx = canvas.getContext("2d");
+        overlayCtx.clearRect(0, 0, width, height);
+
+        if (interactionData) {
+          drawHoveredNode(overlayCtx, interactionData, links, sizeScale, {
+            colorNode: COLOR_NODE,
+            transform: transform,
+          });
+        }
+      });
+
+    d3.select(canvas).call(zoomBehavior);
+
+    return () => {
+      d3.select(canvas).on(".zoom", null);
+    };
+  }, [width, height, nodes, links, sizeScale, interactionData]);
   
   return (
     <div
@@ -179,6 +232,7 @@ export const NetworkDiagram = ({width, height, data}) => {
         <Tooltip
           interactionData={interactionData}
           width={width} // exceptionnaly here, for placement because interactionData is not built with placement
+          transform={zoomTransformRef.current}
         />
       </div>
     </div>

@@ -1,5 +1,5 @@
 export function drawHoveredNode(ctx, hoveredNode, links, sizeScale, options) {
-  const {colorNode} = options;
+  const {colorNode, transform} = options;
 
   // Get routes departing from hovered node
   const hoveredLinks = links.filter(
@@ -11,8 +11,14 @@ export function drawHoveredNode(ctx, hoveredNode, links, sizeScale, options) {
   ctx.strokeStyle = colorNode;
   hoveredLinks.forEach((link) => {
     ctx.beginPath();
-    ctx.moveTo(link.source.x, link.source.y);
-    ctx.lineTo(link.target.x, link.target.y);
+    ctx.moveTo(
+      transform.applyX(link.source.x),
+      transform.applyY(link.source.y)
+    );
+    ctx.lineTo(
+      transform.applyX(link.target.x),
+      transform.applyY(link.target.y)
+    );
     ctx.stroke();
   });
 
@@ -21,8 +27,8 @@ export function drawHoveredNode(ctx, hoveredNode, links, sizeScale, options) {
   ctx.fillStyle = colorNode;
   ctx.beginPath();
   ctx.arc(
-    hoveredNode.x,
-    hoveredNode.y,
+    transform.applyX(hoveredNode.x),
+    transform.applyY(hoveredNode.y),
     sizeScale(hoveredNode.nRoutes),
     0,
     2 * Math.PI
