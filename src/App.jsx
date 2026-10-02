@@ -4,7 +4,7 @@ import { dataRoutes } from "./routes";
 import { NetworkDiagram } from './vizcomponents/NetworkDiagram';
 import { FaPlane } from "react-icons/fa";
 
-const MAX_AIRPORTS = 100; // <-- filtre temporaire, à supprimer plus tard // 2500
+const MAX_AIRPORTS = 2500; // <-- filtre temporaire, à supprimer plus tard // 2500
 
 const MARGIN = { top: 0, right: 0, bottom: 0, left: 0 };
 

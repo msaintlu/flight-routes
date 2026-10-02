@@ -10,6 +10,8 @@ const BUBBLE_MIN_SIZE = 1;
 const BUBBLE_MAX_SIZE = 10;
 const COLOR_NODE = "#467599";
 const COLOR_LINK = "#BBD5ED";//"#D2D6EF";//
+const QUADTREE_UPDATE_INTERVAL = 100;
+const HOVER_THROTTLE = 100;
 
 // Throttling function; Run fn at most once every 'wait' ms.
 function throttle(fn, wait) {
@@ -28,6 +30,7 @@ export const NetworkDiagram = ({width, height, data}) => {
   const overlayRef = useRef(null);
   const [interactionData, setInteractionData] = useState(null);
   const quadtreeRef = useRef(null); // don't want to trigger a re render when quadtree is updated
+  const [simulationRunning, setSimulationRunning] = useState(true);
 
   // The force simulation mutates links and nodes, so create a copy first
   // Node positions are initialized by d3
@@ -45,11 +48,15 @@ export const NetworkDiagram = ({width, height, data}) => {
 
   // Layer 1: simulation and network drawing, run once
   useEffect(() => {
+    setSimulationRunning(true);
+
     const ctx = canvasRef.current.getContext("2d");
 
     if (!ctx) {
       return;
     }
+
+    let animationFrame;
 
     // d3-force to find the position of nodes on the canvas
     const simulation = d3
@@ -63,10 +70,20 @@ export const NetworkDiagram = ({width, height, data}) => {
       .force("center", d3.forceCenter(width / 2, height / 2)) // Force #4: nodes are attracted by the center of the chart area
       // at each iteration of the simulation, draw the network diagram with the new node positions
       .force("x", d3.forceX(width / 2).strength(0.03))
-      .force("y", d3.forceY(height / 2).strength(0.06))
+      .force("y", d3.forceY(height / 2).strength(0.08))
       .on("tick", () => {
-        drawNetwork(ctx, width, height, nodes, links, sizeScale, {colorNode: COLOR_NODE, colorLink: COLOR_LINK});
-      });
+        // Use requestAnimationFrame to avoid drawing at each and every tick
+        if (animationFrame) return;
+        animationFrame = requestAnimationFrame(() => {
+          animationFrame = null;
+
+          drawNetwork(ctx, width, height, nodes, links, sizeScale, {
+            colorNode: COLOR_NODE,
+            colorLink: COLOR_LINK,
+          });
+        });
+      })
+      .on("end", () => setSimulationRunning(false));
 
     return () => {
       simulation.stop();
@@ -83,7 +100,7 @@ export const NetworkDiagram = ({width, height, data}) => {
         (d) => d.x,
         (d) => d.y
       );
-    }, 50);
+    }, QUADTREE_UPDATE_INTERVAL);
 
     return () => clearInterval(interval);
   }, [nodes]);
@@ -109,11 +126,10 @@ export const NetworkDiagram = ({width, height, data}) => {
   };
 
   // Build the throttled function
-  const throttledHandleMove = useMemo(() => throttle(handleMove, 100), [ // Works, but isn't there a 'pb' with the fact that quadtreeRef runs every 50 ms when the simulation is runnin ?
+  const throttledHandleMove = useMemo(() => throttle(handleMove, HOVER_THROTTLE), [ // Works, but isn't there a 'pb' with the fact that quadtreeRef runs every 50 ms when the simulation is running ?
     quadtreeRef,
   ]);
   
-
   return (
     <div
       style={{
@@ -141,19 +157,26 @@ export const NetworkDiagram = ({width, height, data}) => {
           position: "absolute",
           inset: 0,
         }}
-        onMouseMove={handleMove}
+        onMouseMove={simulationRunning ? throttledHandleMove : handleMove}
         onMouseLeave={() => setInteractionData(null)}
       />
       <div
         style={{
           position: "absolute",
+          left:0,
+          top:0,
           width: width,
           height: height,
           pointerEvents: "none",
         }}
       >
-        <Tooltip 
-          interactionData={interactionData} 
+        {simulationRunning && (
+          <div className="computing-message">
+            <p>Computing nodes positions...</p>
+          </div>
+        )}
+        <Tooltip
+          interactionData={interactionData}
           width={width} // exceptionnaly here, for placement because interactionData is not built with placement
         />
       </div>

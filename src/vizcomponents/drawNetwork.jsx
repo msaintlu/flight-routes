@@ -4,7 +4,7 @@ export function drawNetwork(ctx, width, height, nodes, links, sizeScale, options
   ctx.clearRect(0, 0, width, height);
 
   // Draw the links first
-  ctx.globalAlpha = 0.1;
+  ctx.globalAlpha = 0.3;
 
   links.forEach((link) => {
     ctx.beginPath();

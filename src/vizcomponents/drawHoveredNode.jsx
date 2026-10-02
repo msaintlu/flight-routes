@@ -7,7 +7,7 @@ export function drawHoveredNode(ctx, hoveredNode, links, sizeScale, options) {
   );
 
   // draw hovered links
-  ctx.globalAlpha = 0.5;
+  ctx.globalAlpha = 1;
   ctx.strokeStyle = colorNode;
   hoveredLinks.forEach((link) => {
     ctx.beginPath();
