@@ -23,15 +23,30 @@
   margin-top: -20px;
 }
 
-.button {
-  border-radius: 8px;
-  border: none;
-  padding: 2px 12px;
-  margin: 0px 8px 0px;
-  font-size: 12pt;
-  font-family: inherit;
-  background-color: #3b35612f;
-  color: #3b3500;
-  cursor: pointer;
-  transition: border-color 0.25s;
+.tooltip {
+    background: #ffffff7e;
+    opacity: 0.9;
+    /*border: 1px solid #000000;*/
+    border-radius: 5px;
+    /*box-shadow: 3px 3px 3px rgb(0 0 0 / 10%);*/
+    font-size: 16px;
+    /*max-width: 200px;*/
+    min-width: 110px;
+    padding: 8px 12px;
+    position: absolute; /* PUT THIS INLINE */
+    /*transform: translate(15%,-150%);*/
+    color: #FF57BB;
+    line-height: 8px;
 }
+
+.tooltip-title {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.tooltip-row {
+    line-height: 16px;
+    font-size: 16px;
+    margin: 2px 0;
+}
+

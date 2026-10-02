@@ -3,6 +3,7 @@ import { quadtree } from "d3";
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { drawNetwork } from "./drawNetwork";
 import { drawHoveredNode } from "./drawHoveredNode";
+import { Tooltip } from "./Tooltip_networkDiagram";
 
 //const RADIUS = 2;
 const BUBBLE_MIN_SIZE = 1;
@@ -96,7 +97,6 @@ export const NetworkDiagram = ({width, height, data}) => {
     drawHoveredNode(ctx, interactionData, links, sizeScale, { colorNode: COLOR_NODE });
   }, [data, interactionData, width, height, sizeScale, COLOR_NODE]);
 
-  // Mouse move handler
 
   // One listener on the canvas, then we find the circle ourselves.
   const handleMove = (e) => {
@@ -109,9 +109,10 @@ export const NetworkDiagram = ({width, height, data}) => {
   };
 
   // Build the throttled function
-  const throttledHandleMove = useMemo(() => throttle(handleMove, 100), [
+  const throttledHandleMove = useMemo(() => throttle(handleMove, 100), [ // Works, but isn't there a 'pb' with the fact that quadtreeRef runs every 50 ms when the simulation is runnin ?
     quadtreeRef,
   ]);
+  
 
   return (
     <div
@@ -143,6 +144,19 @@ export const NetworkDiagram = ({width, height, data}) => {
         onMouseMove={handleMove}
         onMouseLeave={() => setInteractionData(null)}
       />
+      <div
+        style={{
+          position: "absolute",
+          width: width,
+          height: height,
+          pointerEvents: "none",
+        }}
+      >
+        <Tooltip 
+          interactionData={interactionData} 
+          width={width} // exceptionnaly here, for placement because interactionData is not built with placement
+        />
+      </div>
     </div>
   );
 };
